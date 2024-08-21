@@ -1,3 +1,4 @@
+//! 这个复杂度不行，翻转链表的地方应该手写链表实现O(1)的翻转才行
 #include <iostream>
 #include <list>
 using namespace std;
