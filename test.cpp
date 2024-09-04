@@ -1,69 +1,114 @@
 #include <iostream>
-#include <map>
-#include <cstdlib> // For rand() and srand()
-#include <ctime>   // For time()
+#include <list>
+#include <unordered_map>
+#include <set>
+using namespace std;
 
-void testMapIteration(const std::map<int, std::string>& myMap) {
-    // 使用 ++ 操作符遍历 map
-    std::cout << "Forward iteration:" << std::endl;
-    for (std::map<int, std::string>::const_iterator it = myMap.begin(); it != myMap.end(); ++it) {
-        std::cout << it->first << " => " << it->second << std::endl;
+struct Element {
+    int id;
+    int weight;
+    list<Element>::iterator it;  // 存储元素在list中的迭代器
+};
+
+struct Compare {
+    bool operator()(const Element* lhs, const Element* rhs) const {
+        return lhs->weight < rhs->weight;
+    }
+};
+
+class EfficientQueue {
+private:
+    list<Element> lst;
+    unordered_map<int, Element*> id_map;
+    set<Element*, Compare> weight_set;
+
+public:
+    // 删除队头元素
+    void pop_front() {
+        if (!lst.empty()) {
+            Element* front = &lst.front();
+            id_map.erase(front->id);
+            weight_set.erase(front);
+            lst.pop_front();
+        }
     }
 
-    // 使用 -- 操作符反向遍历 map
-    std::cout << "Backward iteration:" << std::endl;
-    for (std::map<int, std::string>::const_reverse_iterator rit = myMap.rbegin(); rit != myMap.rend(); ++rit) {
-        std::cout << rit->first << " => " << rit->second << std::endl;
+    // 加入队尾元素
+    void push_back(int id, int weight) {
+        lst.push_back({id, weight});
+        auto it = --lst.end();
+        it->it = it;  // 存储迭代器
+        Element* elem = &(*it);
+        id_map[id] = elem;
+        weight_set.insert(elem);
     }
-}
+
+    // 给定标号，在标号前方插入一个新元素
+    void insert_before(int target_id, int new_id, int new_weight) {
+        auto it = id_map.find(target_id);
+        if (it != id_map.end()) {
+            Element* target = it->second;
+            auto pos = lst.insert(target->it, {new_id, new_weight});
+            pos->it = pos;  // 存储迭代器
+            Element* new_elem = &(*pos);
+            id_map[new_id] = new_elem;
+            weight_set.insert(new_elem);
+        }
+    }
+
+    // 删除权重最大的元素
+    void erase_max_weight() {
+        if (!weight_set.empty()) {
+            Element* max_elem = *weight_set.rbegin();
+            id_map.erase(max_elem->id);
+            weight_set.erase(max_elem);
+            lst.erase(max_elem->it);
+        }
+    }
+
+    // 删除指定ID的元素 (O(1)操作)
+    void erase_by_id(int id) {
+        auto it = id_map.find(id);
+        if (it != id_map.end()) {
+            Element* elem = it->second;
+            weight_set.erase(elem);
+            lst.erase(elem->it);
+            id_map.erase(it);
+        }
+    }
+
+    // 打印队列中的元素（用于调试）
+    void print_queue() {
+        for (const auto& elem : lst) {
+            cout << "ID: " << elem.id << ", Weight: " << elem.weight << endl;
+        }
+    }
+};
 
 int main() {
-    // 初始化随机数生成器
-    std::srand(std::time(0));
-
-    // 测试空 map
-    std::map<int, std::string> emptyMap;
-    std::cout << "Testing empty map:" << std::endl;
-    testMapIteration(emptyMap);
-
-    // 测试只有一个元素的 map
-    std::map<int, std::string> singleElementMap;
-    singleElementMap[1] = "one";
-    std::cout << "\nTesting single element map:" << std::endl;
-    testMapIteration(singleElementMap);
-
-    // 测试包含多个元素的 map
-    std::map<int, std::string> multipleElementsMap;
-    multipleElementsMap[1] = "one";
-    multipleElementsMap[2] = "two";
-    multipleElementsMap[3] = "three";
-    std::cout << "\nTesting multiple elements map:" << std::endl;
-    testMapIteration(multipleElementsMap);
-
-    // 测试包含大量元素的 map
-    std::map<int, std::string> largeMap;
-    for (int i = 0; i < 1000; ++i) {
-        largeMap[i] = "value" + std::to_string(i);
-    }
-    std::cout << "\nTesting large map:" << std::endl;
-    testMapIteration(largeMap);
-
-    // 测试随机插入和删除的 map
-    std::map<int, std::string> randomMap;
-    for (int i = 0; i < 100; ++i) {
-        int key = std::rand() % 200; // 随机生成一个键
-        randomMap[key] = "value" + std::to_string(key);
-    }
-    std::cout << "\nTesting random insertion map:" << std::endl;
-    testMapIteration(randomMap);
-
-    // 随机删除一些元素
-    for (int i = 0; i < 50; ++i) {
-        int key = std::rand() % 200;
-        randomMap.erase(key);
-    }
-    std::cout << "\nTesting random deletion map:" << std::endl;
-    testMapIteration(randomMap);
-
+    EfficientQueue queue;
+    queue.push_back(1, 10);
+    queue.push_back(2, 20);
+    queue.push_back(3, 15);
+    
+    cout << "Initial queue:" << endl;
+    queue.print_queue();
+    
+    cout << "After popping front:" << endl;
+    queue.pop_front();
+    queue.print_queue();
+    
+    cout << "After inserting before ID 3:" << endl;
+    queue.insert_before(3, 4, 18);
+    queue.print_queue();
+    
+    cout << "After erasing max weight:" << endl;
+    queue.erase_max_weight();
+    queue.print_queue();
+    
+    cout << "After erasing ID 3:" << endl;
+    queue.erase_by_id(3);
+    queue.print_queue();
+    
     return 0;
 }

@@ -11,6 +11,8 @@
         "initializer_list": "cpp",
         "regex": "cpp",
         "utility": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "*.tcc": "cpp",
+        "unordered_map": "cpp"
     }
 }
