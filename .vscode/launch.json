@@ -4,7 +4,7 @@
         "name": "mydbg",
         "type": "cppdbg",
         "request": "launch",
-        "program": "${fileDirname}/${fileBasenameNoExtension}.out",
+        "program": "${fileDirname}/${fileBasenameNoExtension}",
         "args": ["<", "${fileBasenameNoExtension}.in"],
         "stopAtEntry": false,
         "cwd": "${fileDirname}",

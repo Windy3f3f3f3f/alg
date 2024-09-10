@@ -11,7 +11,7 @@
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}.out",
+                "${fileDirname}/${fileBasenameNoExtension}",
                 "-DONLINE_JUDGE",
                 "-std=c++11",
             ],
